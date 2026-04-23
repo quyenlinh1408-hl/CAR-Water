@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using UnityEditor.Build;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
