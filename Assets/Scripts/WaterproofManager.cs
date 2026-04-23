@@ -10,7 +10,7 @@ public class WaterproofManager : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
     {
-        if (FindFirstObjectByType<WaterproofManager>() != null)
+        if (FindAnyObjectByType<WaterproofManager>() != null)
         {
             return;
         }

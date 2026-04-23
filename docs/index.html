@@ -2,7 +2,7 @@
 <html lang="en-us">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
     <title>Unity Web Player | DeepSeaDriver</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
@@ -110,23 +110,50 @@
 
       document.querySelector("#unity-loading-bar").style.display = "block";
 
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                document.querySelector("#unity-loading-bar").style.display = "none";
-                document.querySelector("#unity-fullscreen-button").onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
+      async function decompressGzipFile(url, mimeType) {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("Unable to load " + url + " (HTTP " + response.status + ")");
+        }
 
-              }).catch((message) => {
-                alert(message);
-              });
+        const compressedData = await response.arrayBuffer();
+        if (!("DecompressionStream" in window)) {
+          throw new Error("This browser does not support gzip decompression for Unity WebGL assets.");
+        }
+
+        const decompressedStream = new Blob([compressedData]).stream().pipeThrough(new DecompressionStream("gzip"));
+        const decompressedData = await new Response(decompressedStream).arrayBuffer();
+        return URL.createObjectURL(new Blob([decompressedData], { type: mimeType }));
+      }
+
+      (async () => {
+        const dataUrl = await decompressGzipFile(buildUrl + "/docs.data.gz", "application/octet-stream");
+        const frameworkUrl = await decompressGzipFile(buildUrl + "/docs.framework.js.gz", "application/javascript");
+        const codeUrl = await decompressGzipFile(buildUrl + "/docs.wasm.gz", "application/wasm");
+
+        config.dataUrl = dataUrl;
+        config.frameworkUrl = frameworkUrl;
+        config.codeUrl = codeUrl;
+
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+          createUnityInstance(canvas, config, (progress) => {
+            document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+          }).then((unityInstance) => {
+            document.querySelector("#unity-loading-bar").style.display = "none";
+            document.querySelector("#unity-fullscreen-button").onclick = () => {
+              unityInstance.SetFullscreen(1);
             };
+          }).catch((message) => {
+            alert(message);
+          });
+        };
 
-      document.body.appendChild(script);
+        document.body.appendChild(script);
+      })().catch((message) => {
+        alert(message);
+      });
 
     </script>
   </body>
