@@ -14,7 +14,7 @@ Game Unity ve chu de o to tham hiem duoi dai duong.
   - `Outside underwater`: bat suong mu xanh duoi nuoc.
 
 ## Anh chup scene hien tai
-![Scene hien tai](Docs/scene-current.png)
+![Scene hien tai](docs/scene-current.png)
 
 ## Cau truc thu muc chinh
 - `Assets/Scripts/WaterproofManager.cs`: script quan ly trang thai cabin/ngoai nuoc.
