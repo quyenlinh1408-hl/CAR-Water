@@ -4,12 +4,17 @@ public class WaterproofManager : MonoBehaviour
 {
     public bool isInsideCar = true;
     public KeyCode toggleKey = KeyCode.F;
+    public Transform groundCheckOrigin;
+    public LayerMask seabedMask = ~0;
+    public float groundCheckDistance = 1.5f;
     [Range(0f, 1f)] public float outsideTintAlpha = 0.16f;
     public Color outsideTintColor = new Color(0.08f, 0.35f, 0.55f, 1f);
     public Color outsideFogColor = new Color(0f, 0.2f, 0.4f, 1f);
     public float outsideFogDensity = 0.055f;
 
     private bool? previousInsideCar;
+    private bool isGrounded;
+    private float seabedDistance;
     private Camera cachedCamera;
     private CameraClearFlags cachedClearFlags;
     private Color cachedBackgroundColor;
@@ -30,11 +35,8 @@ public class WaterproofManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(toggleKey))
-        {
-            isInsideCar = !isInsideCar;
-            Debug.Log($"Mode switched: {(isInsideCar ? "Inside car" : "Outside underwater")}");
-        }
+        HandleModeInput();
+        UpdateGroundedState();
 
         if (previousInsideCar != isInsideCar)
         {
@@ -69,6 +71,83 @@ public class WaterproofManager : MonoBehaviour
         cameraSettingsCached = true;
     }
 
+    private void HandleModeInput()
+    {
+        if (Input.GetKeyDown(toggleKey))
+        {
+            ToggleMode();
+        }
+
+        if (Input.touchCount == 0)
+        {
+            return;
+        }
+
+        for (var touchIndex = 0; touchIndex < Input.touchCount; touchIndex++)
+        {
+            var touch = Input.GetTouch(touchIndex);
+            if (touch.phase != TouchPhase.Began)
+            {
+                continue;
+            }
+
+            if (IsToggleTouch(touch.position))
+            {
+                ToggleMode();
+                break;
+            }
+        }
+    }
+
+    private bool IsToggleTouch(Vector2 screenPosition)
+    {
+        return screenPosition.x <= 220f && screenPosition.y <= 160f;
+    }
+
+    private void ToggleMode()
+    {
+        isInsideCar = !isInsideCar;
+        Debug.Log($"Mode switched: {(isInsideCar ? "Inside car" : "Outside underwater")}");
+    }
+
+    private void UpdateGroundedState()
+    {
+        if (isInsideCar)
+        {
+            isGrounded = false;
+            seabedDistance = 0f;
+            return;
+        }
+
+        var origin = ResolveGroundCheckOrigin();
+        var ray = new Ray(origin.position, Vector3.down);
+
+        if (Physics.Raycast(ray, out var hitInfo, groundCheckDistance, seabedMask, QueryTriggerInteraction.Ignore))
+        {
+            isGrounded = true;
+            seabedDistance = hitInfo.distance;
+            return;
+        }
+
+        isGrounded = false;
+        seabedDistance = groundCheckDistance;
+    }
+
+    private Transform ResolveGroundCheckOrigin()
+    {
+        if (groundCheckOrigin != null)
+        {
+            return groundCheckOrigin;
+        }
+
+        if (cachedCamera != null)
+        {
+            return cachedCamera.transform;
+        }
+
+        return transform;
+    }
+
     private void ApplyEnvironment()
     {
         CacheCameraSettings();
@@ -101,6 +180,10 @@ public class WaterproofManager : MonoBehaviour
 
     private void OnGUI()
     {
+        var status = isInsideCar
+            ? "Inside car"
+            : $"Outside underwater | Grounded: {(isGrounded ? "Yes" : "No")} | Depth: {seabedDistance:0.00}m";
+
         if (!isInsideCar)
         {
             var fullScreen = new Rect(0f, 0f, Screen.width, Screen.height);
@@ -113,6 +196,11 @@ public class WaterproofManager : MonoBehaviour
 
         GUI.color = Color.white;
         GUI.Label(new Rect(12f, 12f, 480f, 30f),
-            $"WaterproofManager: {(isInsideCar ? "Inside car" : "Outside underwater")} (press {toggleKey})");
+            $"WaterproofManager: {status} (press {toggleKey})");
+
+        if (GUI.Button(new Rect(Screen.width - 220f, 12f, 200f, 40f), isInsideCar ? "Touch: Exit car" : "Touch: Enter car"))
+        {
+            ToggleMode();
+        }
     }
 }
