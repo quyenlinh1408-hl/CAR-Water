@@ -1,8 +1,11 @@
 using UnityEngine;
+using UnityEngine.Scripting;
 
+[Preserve]
 public class UnderwaterExpeditionBootstrap : MonoBehaviour
 {
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    [Preserve]
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
     {
         if (FindAnyObjectByType<UnderwaterExpeditionBootstrap>() != null)
@@ -11,7 +14,9 @@ public class UnderwaterExpeditionBootstrap : MonoBehaviour
         }
 
         var bootstrapObject = new GameObject("UnderwaterExpeditionBootstrap");
+        DontDestroyOnLoad(bootstrapObject);
         bootstrapObject.AddComponent<UnderwaterExpeditionBootstrap>();
+        Debug.Log("UnderwaterExpeditionBootstrap initialized.");
     }
 
     private void Start()

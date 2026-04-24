@@ -1,0 +1,10 @@
+<linker>
+  <assembly fullname="Assembly-CSharp">
+    <type fullname="UnderwaterExpeditionBootstrap" preserve="all" />
+    <type fullname="UnderwaterCarController" preserve="all" />
+    <type fullname="UnderwaterFollowCamera" preserve="all" />
+    <type fullname="UnderwaterTouchDrivePad" preserve="all" />
+    <type fullname="ExpeditionGameManager" preserve="all" />
+    <type fullname="ExpeditionCheckpoint" preserve="all" />
+  </assembly>
+</linker>
