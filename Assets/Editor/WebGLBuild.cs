@@ -13,6 +13,12 @@ public static class WebGLBuild
     private const string DefaultScenePath = "Assets/Scenes/Main.unity";
     private const string OutputDirectory = "docs";
 
+    [MenuItem("Tools/DeepSeaDriver/Build WebGL Docs")]
+    public static void BuildWebGLDocsFromMenu()
+    {
+        BuildForGitHubPages();
+    }
+
     public static void BuildForGitHubPages()
     {
         EnsureAtLeastOneScene();
