@@ -43,7 +43,7 @@ public class UnderwaterExpeditionBootstrap : MonoBehaviour
 
     private static void EnsureCheckpoints(ExpeditionGameManager manager)
     {
-        var checkpoints = FindObjectsByType<ExpeditionCheckpoint>(FindObjectsSortMode.None);
+        var checkpoints = FindObjectsByType<ExpeditionCheckpoint>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         if (checkpoints.Length == 0)
         {
             checkpoints = CreateDefaultCheckpointTrack();

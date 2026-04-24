@@ -44,8 +44,8 @@ public class UnderwaterCarController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.mass = 1200f;
-        rb.drag = waterDrag;
-        rb.angularDrag = waterAngularDrag;
+        rb.linearDamping = waterDrag;
+        rb.angularDamping = waterAngularDrag;
         rb.useGravity = true;
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
     }
@@ -70,8 +70,8 @@ public class UnderwaterCarController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        var localVelocity = transform.InverseTransformDirection(rb.velocity);
-        CurrentSpeed = rb.velocity.magnitude;
+        var localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
+        CurrentSpeed = rb.linearVelocity.magnitude;
         NormalizedForwardSpeed = Mathf.Clamp01(Mathf.Abs(localVelocity.z) / Mathf.Max(0.01f, maxForwardSpeed));
 
         ApplyPropulsion(localVelocity);
@@ -129,7 +129,7 @@ public class UnderwaterCarController : MonoBehaviour
 
     private void ApplyLateralStabilization()
     {
-        var localVelocity = transform.InverseTransformDirection(rb.velocity);
+        var localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
         var clampedLateral = Mathf.Clamp(localVelocity.x, -maxLateralSpeed, maxLateralSpeed);
         var stabilizedLateral = Mathf.MoveTowards(clampedLateral, 0f, lateralDamping * Time.fixedDeltaTime);
         SetLocalPlanarVelocity(stabilizedLateral, localVelocity.z);
@@ -137,27 +137,27 @@ public class UnderwaterCarController : MonoBehaviour
 
     private void ApplySpeedLimit()
     {
-        var localVelocity = transform.InverseTransformDirection(rb.velocity);
+        var localVelocity = transform.InverseTransformDirection(rb.linearVelocity);
         var clampedForward = Mathf.Clamp(localVelocity.z, -maxReverseSpeed, maxForwardSpeed);
         SetLocalPlanarVelocity(localVelocity.x, clampedForward);
     }
 
     private void ApplyWaterResistance()
     {
-        var speed = rb.velocity.magnitude;
+        var speed = rb.linearVelocity.magnitude;
         if (speed < 0.01f)
         {
             return;
         }
 
         var resistance = speed * speed * quadraticWaterResistance;
-        rb.AddForce(-rb.velocity.normalized * resistance, ForceMode.Acceleration);
+        rb.AddForce(-rb.linearVelocity.normalized * resistance, ForceMode.Acceleration);
     }
 
     private void SetLocalPlanarVelocity(float localX, float localZ)
     {
         var planarWorldVelocity = transform.TransformDirection(new Vector3(localX, 0f, localZ));
-        rb.velocity = new Vector3(planarWorldVelocity.x, rb.velocity.y, planarWorldVelocity.z);
+        rb.linearVelocity = new Vector3(planarWorldVelocity.x, rb.linearVelocity.y, planarWorldVelocity.z);
     }
 
     public void SetTouchInput(float throttle, float steer)

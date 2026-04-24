@@ -15,8 +15,6 @@ public class UnderwaterTouchDrivePad : MonoBehaviour
         {
             targetController = FindAnyObjectByType<UnderwaterCarController>();
         }
-
-        CreateStyles();
     }
 
     private void OnGUI()
@@ -30,6 +28,8 @@ public class UnderwaterTouchDrivePad : MonoBehaviour
         {
             return;
         }
+
+        EnsureStyles();
 
         var size = Mathf.Min(Screen.width, Screen.height) * 0.14f;
         var margin = 22f;
@@ -86,8 +86,13 @@ public class UnderwaterTouchDrivePad : MonoBehaviour
         return Mathf.Abs(value) < touchDeadZone ? 0f : value;
     }
 
-    private void CreateStyles()
+    private void EnsureStyles()
     {
+        if (buttonStyle != null && labelStyle != null)
+        {
+            return;
+        }
+
         buttonStyle = new GUIStyle(GUI.skin.button)
         {
             fontSize = 16,
