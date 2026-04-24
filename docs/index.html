@@ -4,27 +4,56 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
     <title>Unity Web Player | DeepSeaDriver</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
   </head>
   <body>
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+    <div class="sea-glow" aria-hidden="true"></div>
+    <main class="page-shell">
+      <section class="top-panel">
+        <h1 class="project-title">DeepSeaDriver</h1>
+        <div class="status-strip">
+          <span class="status-pill">Trang thai <strong id="load-state">Dang khoi tao</strong></span>
         </div>
-      </div>
-      <div id="unity-warning"> </div>
-      <div id="unity-footer">
-        <div id="unity-logo-title-footer"></div>
-        <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">DeepSeaDriver</div>
-      </div>
-    </div>
+      </section>
+
+      <section>
+        <article class="viewport-wrap cinematic-frame">
+          <div id="unity-container" class="unity-desktop">
+            <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+            <div id="unity-loading-bar">
+              <div id="unity-logo"></div>
+              <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full"></div>
+              </div>
+            </div>
+            <div id="unity-warning"> </div>
+            <div id="unity-footer">
+              <div id="unity-logo-title-footer"></div>
+              <div id="unity-fullscreen-button"></div>
+              <div id="unity-build-title">DeepSeaDriver</div>
+            </div>
+          </div>
+          <div class="cinematic-overlay" aria-hidden="true">
+            <div class="scene-tag">Abyssal Expedition</div>
+            <div class="scene-quote">Silent water. Heavy pressure. Keep moving.</div>
+          </div>
+          <div class="cinematic-hud" aria-hidden="true">
+            <span>Depth 180m</span>
+            <span>Current 1.4m/s</span>
+            <span>Temp 7.8C</span>
+          </div>
+          <p id="progress-text" class="progress-text">Dang danh thuc hanh trinh duoi bien sau...</p>
+        </article>
+      </section>
+    </main>
     <script>
       var canvas = document.querySelector("#unity-canvas");
+      var loadState = document.querySelector("#load-state");
+      var progressText = document.querySelector("#progress-text");
 
       // Shows a temporary message banner/ribbon for a few seconds, or
       // a permanent error message on top of the canvas if type=='error'.
@@ -40,9 +69,17 @@
         var div = document.createElement('div');
         div.innerHTML = msg;
         warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        if (type == 'error') {
+          div.style = 'background: #4f1111; color: #ffdede; padding: 10px;';
+          if (loadState) {
+            loadState.textContent = 'Loi';
+          }
+          if (progressText) {
+            progressText.innerHTML = '<span class="warn">Khoi tao that bai. Thu tai lai trang.</span>';
+          }
+        }
         else {
-          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          if (type == 'warning') div.style = 'background: #5f480f; color: #ffe8b2; padding: 10px;';
           setTimeout(function() {
             warningBanner.removeChild(div);
             updateBannerVisibility();
@@ -104,8 +141,8 @@
 
       } else {
         // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-        canvas.style.width = "960px";
-        canvas.style.height = "600px";
+        canvas.style.width = "100%";
+        canvas.style.height = "auto";
       }
 
       document.querySelector("#unity-loading-bar").style.display = "block";
@@ -140,8 +177,20 @@
         script.onload = () => {
           createUnityInstance(canvas, config, (progress) => {
             document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+            if (loadState) {
+              loadState.textContent = "Tai " + Math.round(progress * 100) + "%";
+            }
+            if (progressText) {
+              progressText.textContent = "Dong bo moi truong: " + Math.round(progress * 100) + "%";
+            }
           }).then((unityInstance) => {
             document.querySelector("#unity-loading-bar").style.display = "none";
+            if (loadState) {
+              loadState.textContent = "San sang";
+            }
+            if (progressText) {
+              progressText.innerHTML = '<span class="ok">San sang lan xuong vung nuoc toi.</span>';
+            }
             document.querySelector("#unity-fullscreen-button").onclick = () => {
               unityInstance.SetFullscreen(1);
             };
